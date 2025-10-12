@@ -4,14 +4,6 @@
 
 class AttributeInstanceHandle {};
 
-class Attribute {
-public:
-	char mRedefinitionMode;
-	bool mSyncable;
-	int mId;
-	HashedString mName;
-};
-
 class AttributeInstance {
 private:
 	char pad[132];
