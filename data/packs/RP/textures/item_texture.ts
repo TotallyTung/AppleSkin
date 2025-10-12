@@ -24,7 +24,7 @@ for (const entry of walkSync(itemTexturesFolder, { exts: [".png"], includeFiles:
 }
 
 createFile({
-    resource_pack_name: "Amethyst-Template RP",
+    resource_pack_name: "Apple Skin",
     texture_name: 'atlas.items',
     texture_data: textureData,
 });

@@ -1,11 +1,11 @@
 {
     "format_version": "1.1.0",
     "meta": {
-        "name": "Amethyst-Template",
+        "name": "AppleSkin",
         "version": "0.0.0",
-        "namespace": "amethyst_template",
-        "author": "FrederoxDev",
-        "uuid": "00000000-0000-0000-0000-000000000000",
+        "namespace": "appleskin",
+        "author": "Tung",
+        "uuid": "c20fb8c4-5f00-4ccf-8504-150be00b7a45",
         "dependencies": [
             {
                 "dependency_uuid": "e56c3987-fd4a-4590-9923-a07fc4be7250",
