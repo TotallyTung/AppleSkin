@@ -16,25 +16,30 @@ private:
 	char pad[132];
 public:
 	float mCurrentValue;
+
+public:
+	float getCurrentValue() {
+		return *(float*)(this + 132);
+	}
 };
 
 class BaseAttributeMap {
 public:
 	std::unordered_map<int, AttributeInstance> mInstanceMap;
 	std::vector<AttributeInstanceHandle> mDirtyAttributes;
+
+public:
+	AttributeInstance& getAttribute(int id) {
+		auto attribute = mInstanceMap.find(id);
+		if (attribute == mInstanceMap.end())
+			Log::Info("Couldn't find attribute with id {}", id);
+		return attribute->second;
+	}
 };
 
 struct AttributesComponent {
 public:
 	BaseAttributeMap mAttributes;
-
-public:
-	AttributeInstance& getAttribute(int id) {
-		auto attribute = mAttributes.mInstanceMap.find(id);
-		if (attribute == mAttributes.mInstanceMap.end())
-			Log::Info("Couldn't find attribute with id {}", id);
-		return attribute->second;
-	}
 };
 
 static_assert(sizeof(AttributesComponent) == 88);

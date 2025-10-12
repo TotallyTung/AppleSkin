@@ -1,0 +1,2 @@
+cd data
+rgl watch

@@ -12,8 +12,3 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 }
 
 void beforeRenderUI(BeforeRenderUIEvent& ev);
-
-struct FoodInfo {
-    std::string itemName;
-    int foodValue;
-};
