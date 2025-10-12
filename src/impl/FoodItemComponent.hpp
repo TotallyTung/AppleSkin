@@ -1,3 +1,4 @@
+#pragma once
 #include <amethyst/Imports.hpp>
 
 class IFoodItemComponent {

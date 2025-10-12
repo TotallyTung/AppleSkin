@@ -1,11 +1,10 @@
+#pragma once
 #include <amethyst/Imports.hpp>
-#include <mc/src-client/common/client/gui/controls/renderers/MinecraftUICustomRenderer.hpp>
 
-class MinecraftUICustomRenderer;
 class IClientInstance;
 class UIControl;
-class RectangleArea;
+struct RectangleArea;
 
 class MinecraftUIRenderContext;
 
-class HudHungerRenderer : public MinecraftUICustomRenderer {};
+class HudHungerRenderer {};
