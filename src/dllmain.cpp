@@ -35,16 +35,8 @@ std::string buildHungerString(float v) {
 
 float calculateRegeneratedHealth(float hunger, float exhaustion) {
     if (!doNaturalRegeneration || hunger < 18.f) return 0.f;
-    float healed = 0.f;
-    while (hunger >= 18.f) {
-        healed += 1;
-        exhaustion += 6;
-        if (exhaustion >= 4) {
-            hunger -= 1;
-            exhaustion -= 1;
-        }
-    }
-    return healed;
+
+    return (4.f - fmod(exhaustion, 4.f)) + ((int)hunger - 18) * 4.f / 6.f;
 }
 
 void drawIconBar(MinecraftUIRenderContext& ctx, mce::TexturePtr& iconTexture, mce::TexturePtr& halfIconTexture, float val, float x, float y, BarAlign align, float alpha = 255.f, mce::Color flushColor = mce::Color::WHITE) {
@@ -98,7 +90,7 @@ void HudHungerRenderer_render(MinecraftUICustomRenderer& self, MinecraftUIRender
             modTextures::saturationFull,
             modTextures::saturationHalf,
             std::min(foodVal + saturation / 2, 10.f),
-            aabb._x0,
+            aabb._x1,
             aabb._y0,
             BarAlign::RIGHT,
             fadeanimation.alpha
@@ -110,7 +102,7 @@ void HudHungerRenderer_render(MinecraftUICustomRenderer& self, MinecraftUIRender
                 modTextures::heartFull,
                 modTextures::heartHalf,
                 std::min((healed + health) / 2, 10.f),
-                heartPos,
+                heartPos + iconSize.x * 17 - 2,
                 aabb._y0,
                 BarAlign::LEFT,
                 fadeanimation.alpha
