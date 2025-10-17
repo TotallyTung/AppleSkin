@@ -2,6 +2,11 @@
 #include <amethyst/Imports.hpp>
 #include <mc/src-deps/core/string/StringHash.hpp>
 
+/*
+* https://github.com/LiteLDev/LeviLamina/blob/1046f89f8f46ff854b9c3500b4fdadb4504e4570/src-server/mc/world/attribute/BaseAttributeMap.h
+* https://github.com/LiteLDev/LeviLamina/blob/1046f89f8f46ff854b9c3500b4fdadb4504e4570/src-server/mc/entity/components/AttributesComponent.h
+*/
+
 class AttributeInstanceHandle {};
 
 class AttributeInstance {

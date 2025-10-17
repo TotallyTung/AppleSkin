@@ -3,14 +3,18 @@
 #include <amethyst/runtime/mod/Mod.hpp>
 #include <amethyst/runtime/ModContext.hpp>
 #include <amethyst/runtime/HookManager.hpp>
-#include <amethyst/runtime/events/RenderingEvents.hpp>
+#include <amethyst/runtime/events/GameEvents.hpp>
 #include <mc/src-client/common/client/renderer/TexturePtr.hpp>
 
 #define ModFunction extern "C" __declspec(dllexport)
 
+class MinecraftUICustomRenderer;
+
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
     return TRUE;
 }
+
+void onStartJoinGame(OnStartJoinGameEvent& event);
 
 namespace modTextures {
     mce::TexturePtr hungerFull;
@@ -32,7 +36,7 @@ struct FadeAnimation {
     float state;
     FadeAnimation() {
         alpha = 0.f;
-        speed = 0.002f;
+        speed = 0.003f;
         state = 1;
     }
     void update() {
