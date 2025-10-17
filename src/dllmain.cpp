@@ -14,12 +14,12 @@
 
 bool hasLoadedTextures = false;
 bool doNaturalRegeneration = true;
+float heartPos = 0.f;
 static HashedString flushString(0xA99285D21E94FC80, "ui_flush");
 FadeAnimation fadeanimation;
 glm::tvec2<float> iconSize(9.f, 9.f);
 glm::tvec2<float> uvPos(0.f, 0.f);
 glm::tvec2<float> uvSize(1.f, 1.f);
-float heartPos;
 SafetyHookInline _Item_appendFormattedHovertext;
 SafetyHookInline _HudHungerRenderer_render;
 SafetyHookInline _HudHeartRenderer_render;
@@ -33,10 +33,9 @@ std::string buildHungerString(float v) {
     return out;
 }
 
-float calculateRegeneratedHealth(float hunger, float exhaustion) {
+float calculateRegeneratedHealth(float hunger, float saturation, float exhaustion) {
     if (!doNaturalRegeneration || hunger < 18.f) return 0.f;
-
-    return (4.f - fmod(exhaustion, 4.f)) + ((int)hunger - 18) * 4.f / 6.f;
+    return 0.f; // No idea
 }
 
 void drawIconBar(MinecraftUIRenderContext& ctx, mce::TexturePtr& iconTexture, mce::TexturePtr& halfIconTexture, float val, float x, float y, BarAlign align, float alpha = 255.f, mce::Color flushColor = mce::Color::WHITE) {
@@ -48,9 +47,8 @@ void drawIconBar(MinecraftUIRenderContext& ctx, mce::TexturePtr& iconTexture, mc
     }
 }
 
-void onStartJoinGame(OnStartJoinGameEvent& ev) {
-    ILevel* level = ev.client.getLocalPlayer()->getLevel();
-    doNaturalRegeneration = level->getGameRules().mGameRules[(int)GameRulesIndex::DoNaturalRegeneration].mEnabled;
+void onLevelConstructed(OnLevelConstructedEvent& ev) {
+    doNaturalRegeneration = ev.mLevel.getGameRules().mGameRules[(int)GameRulesIndex::DoNaturalRegeneration].mEnabled;
 }
 
 void HudHungerRenderer_render(MinecraftUICustomRenderer& self, MinecraftUIRenderContext& renderContext, ClientInstance& client, UIControl& owner, int pass, RectangleArea& aabb) {
@@ -60,10 +58,11 @@ void HudHungerRenderer_render(MinecraftUICustomRenderer& self, MinecraftUIRender
         modTextures::hungerHalf = renderContext.getTexture("textures/ui/hunger_half", true);
         modTextures::saturationFull = renderContext.getTexture("textures/ui/saturation_full", true);
         modTextures::saturationHalf = renderContext.getTexture("textures/ui/saturation_half", true);
-        modTextures::heartFull = renderContext.getTexture("textures/ui/heart_new", true);
+        modTextures::heartFull = renderContext.getTexture("textures/ui/heart", true);
         modTextures::heartHalf = renderContext.getTexture("textures/ui/heart_half", true);
         hasLoadedTextures = true;
     }
+    
     LocalPlayer* lp = client.getLocalPlayer();
     BaseAttributeMap& attributes = lp->tryGetComponent<AttributesComponent>()->mAttributes;
     float hunger = attributes.getInstance(2).mCurrentValue;
@@ -73,13 +72,15 @@ void HudHungerRenderer_render(MinecraftUICustomRenderer& self, MinecraftUIRender
     drawIconBar(renderContext, modTextures::saturationFull, modTextures::saturationHalf, saturation / 2, aabb._x1, aabb._y0, BarAlign::RIGHT);
     const Item* item = lp->playerInventory->getSelectedItem().getItem();
     if (item != nullptr && item->isFood()) {
-        auto food = item->getFood();
-        float foodVal = food->mSaturationModifier * 5;
+        float foodVal = item->getFood()->mSaturationModifier * 10;
+        Log::Info("{} {}", foodVal / 10, saturation);
+        float predictedHunger = std::min((foodVal + hunger), 20.f);
+        float predictedSaturation = std::min((foodVal + saturation), 20.f);
         drawIconBar(
             renderContext,
             modTextures::hungerFull,
             modTextures::hungerHalf,
-            std::min(foodVal + hunger / 2, 10.f),
+            predictedHunger / 2,
             aabb._x1,
             aabb._y0,
             BarAlign::RIGHT,
@@ -89,13 +90,13 @@ void HudHungerRenderer_render(MinecraftUICustomRenderer& self, MinecraftUIRender
             renderContext,
             modTextures::saturationFull,
             modTextures::saturationHalf,
-            std::min(foodVal + saturation / 2, 10.f),
+            predictedSaturation / 2,
             aabb._x1,
             aabb._y0,
             BarAlign::RIGHT,
             fadeanimation.alpha
         );
-        float healed = calculateRegeneratedHealth(hunger, exhaustion);
+        float healed = calculateRegeneratedHealth(predictedHunger, predictedSaturation, exhaustion);
         if(healed > 0.f)
             drawIconBar(
                 renderContext,
@@ -130,7 +131,7 @@ ModFunction void Initialize(AmethystContext& ctx, const Amethyst::Mod& mod)
     // Initialize Amethyst mod backend
     Amethyst::InitializeAmethystMod(ctx, mod);
     auto& bus = Amethyst::GetEventBus();
-    //bus.AddListener<OnStartJoinGameEvent>(&onStartJoinGame);
+    bus.AddListener<OnLevelConstructedEvent>(&onLevelConstructed);
 
     auto& hooks = Amethyst::GetHookManager();
     hooks.CreateHookAbsolute(
