@@ -23,6 +23,8 @@ namespace modTextures {
     mce::TexturePtr saturationHalf;
     mce::TexturePtr heartFull;
     mce::TexturePtr heartHalf;
+    mce::TexturePtr exhaustionFull;
+    mce::TexturePtr exhaustionHalf;
 };
 
 enum BarAlign {
