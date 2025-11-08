@@ -10,6 +10,8 @@
 #include <mc/src-client/common/client/renderer/screen/MinecraftUIRenderContext.hpp>
 #include <mc/src-client/common/client/gui/gui/UIControl.hpp>
 #include <mc/src-deps/core/string/StringHash.hpp>
+#include <mc/src-client/common/client/gui/ScreenView.hpp>
+#include <mc/src-client/common/client/gui/gui/VisualTree.hpp>
 #include "impl/AttributesComponent.hpp"
 
 bool hasLoadedTextures = false;
@@ -53,6 +55,7 @@ void onLevelConstructed(OnLevelConstructedEvent& ev) {
 }
 
 void HudHungerRenderer_render(MinecraftUICustomRenderer& self, MinecraftUIRenderContext& renderContext, ClientInstance& client, UIControl& owner, int pass, RectangleArea& aabb) {
+    
     _HudHungerRenderer_render.call<void, MinecraftUICustomRenderer&, MinecraftUIRenderContext&, ClientInstance&, UIControl&, int, RectangleArea&>(self, renderContext, client, owner, pass, aabb);
     hudHungerArea = aabb;
 }
@@ -62,10 +65,20 @@ void HudHeartRenderer_render(MinecraftUICustomRenderer& self, MinecraftUIRenderC
     heartPos = aabb._x1;
 }
 
-void afterRenderUI(AfterRenderUIEvent& ev) {
+void beforeRenderUI(BeforeRenderUIEvent& ev) {
     MinecraftUIRenderContext& renderContext = ev.ctx;
     LocalPlayer* lp = renderContext.mClient->getLocalPlayer();
-    if (lp == nullptr || lp->isCreative()) return;
+    if (lp == nullptr || lp->isCreative() || !hasLoadedTextures || ev.screen.visualTree->mRootControlName->mName != "hud_screen") return;
+    BaseAttributeMap& attributes = lp->tryGetComponent<AttributesComponent>()->mAttributes;
+    float exhaustion = attributes.getInstance(4).mCurrentValue;
+    drawIconBar(renderContext, modTextures::exhaustionFull, modTextures::exhaustionHalf, exhaustion / 2, hudHungerArea._x1, hudHungerArea._y0, BarAlign::RIGHT);
+}
+
+void afterRenderUI(AfterRenderUIEvent& ev) {
+    
+    MinecraftUIRenderContext& renderContext = ev.ctx;
+    LocalPlayer* lp = renderContext.mClient->getLocalPlayer();
+    if (lp == nullptr || lp->isCreative() || ev.screen.visualTree->mRootControlName->mName != "hud_screen") return;
     
     if (!hasLoadedTextures) {
         modTextures::hungerFull = renderContext.getTexture("textures/ui/hunger_full", true);
@@ -143,6 +156,7 @@ ModFunction void Initialize(AmethystContext& ctx, const Amethyst::Mod& mod)
     Amethyst::InitializeAmethystMod(ctx, mod);
     auto& bus = Amethyst::GetEventBus();
     bus.AddListener<AfterRenderUIEvent>(&afterRenderUI);
+    bus.AddListener<BeforeRenderUIEvent>(&beforeRenderUI);
     bus.AddListener<OnLevelConstructedEvent>(&onLevelConstructed);
 
     auto& hooks = Amethyst::GetHookManager();
