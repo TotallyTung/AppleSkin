@@ -4,6 +4,7 @@
 #include <amethyst/runtime/ModContext.hpp>
 #include <amethyst/runtime/HookManager.hpp>
 #include <amethyst/runtime/events/GameEvents.hpp>
+#include <amethyst/runtime/events/RenderingEvents.hpp>
 #include <mc/src-client/common/client/renderer/TexturePtr.hpp>
 
 #define ModFunction extern "C" __declspec(dllexport)
@@ -15,6 +16,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 }
 
 void onLevelConstructed(OnLevelConstructedEvent&);
+void afterRenderUI(AfterRenderUIEvent&);
 
 namespace modTextures {
     mce::TexturePtr hungerFull;
@@ -38,7 +40,7 @@ struct FadeAnimation {
     float state;
     FadeAnimation() {
         alpha = 0.f;
-        speed = 0.003f;
+        speed = 0.002f;
         state = 1;
     }
     void update() {
