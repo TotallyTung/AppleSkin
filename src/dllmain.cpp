@@ -100,10 +100,11 @@ void afterRenderUI(AfterRenderUIEvent& ev) {
     drawIconBar(renderContext, modTextures::saturationFull, modTextures::saturationHalf, saturation / 2, hudHungerPos, BarAlign::RIGHT);
     const Item* item = lp->playerInventory->getSelectedItem().getItem();
     if (item != nullptr && item->isFood()) {
-        auto foodcomp = item->mFoodComponentLegacy.get();
-        if (foodcomp == nullptr) return;
-        float predictedHunger = std::min(hunger + foodcomp->mNutrition, 20.f);
-        float predictedSaturation = std::min(saturation + foodcomp->mSaturationModifier * foodcomp->mNutrition * 2, predictedHunger);
+        IFoodItemComponent* food = item->getFood();
+        if (food == nullptr) return;
+        int nutrition = food->getNutrition();
+        float predictedHunger = std::min(hunger + nutrition, 20.f);
+        float predictedSaturation = std::min(saturation + food->getSaturationModifier() * nutrition * 2, predictedHunger);
         drawIconBar(
             renderContext,
             modTextures::hungerFull,
@@ -143,10 +144,10 @@ void Item_appendFormattedHovertext(const Item* self, const ItemStackBase& stack,
     _Item_appendFormattedHovertext.thiscall<void, const Item*, const ItemStackBase&, Level&, std::string&, bool>(self, stack, level, hovertext, showCategory);
 
     Item* item = stack.mItem;
-    FoodItemComponentLegacy* food = item->mFoodComponentLegacy.get();
+    IFoodItemComponent* food = item->getFood();
     if (item->isFood() && food != nullptr) {
-        int nutrition = food->mNutrition;
-        int saturation = food->mSaturationModifier * nutrition * 2;
+        int nutrition = food->getNutrition();
+        int saturation = food->getSaturationModifier() * nutrition * 2;
         if (nutrition > 0)
             hovertext += std::format("\n{} ({})", buildBarString(nutrition, "", ""), nutrition);
 
