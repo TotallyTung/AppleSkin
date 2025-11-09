@@ -1,4 +1,4 @@
-# Apple Skin <img src="logo.png" alt="Logo" width="20"/>
+# Apple Skin <img src="logo.png" alt="Logo" width="24"/>
 
 ##### An unofficial port of the mod _Apple Skin_ from Java.
 
