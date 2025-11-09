@@ -41,7 +41,7 @@ struct FadeAnimation {
     float state;
     FadeAnimation() {
         alpha = 0.f;
-        speed = 0.002f;
+        speed = 0.01f;
         state = 1;
     }
     void update() {
