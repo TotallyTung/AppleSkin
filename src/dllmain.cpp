@@ -36,10 +36,17 @@ std::string buildBarString(int v, const std::string full, const std::string half
     return out;
 }
 
-float calculateRegeneratedHealth(float hunger, float saturation, float exhaustion) {
+float calculateRegeneratedHealth(float hunger, float saturation, float exhaustion, const std::vector<FoodItemComponentLegacy::Effect>& effects) {
     // To do: calc regen heart from effects
-    if (!doNaturalRegeneration || hunger < 18.0f) return 0.0f;
-    return floorf((saturation + (hunger - 18.0f) + (exhaustion / 4.0f)) / 1.5f);
+    float healed = 0.f;
+    if (doNaturalRegeneration || hunger >= 18.0f) healed = floorf((saturation + (hunger - 18.0f) + (exhaustion / 4.0f)) / 1.5f);
+    for (auto& effect : effects) {
+        if (effect.name == "regeneration") {
+            healed += floorf((float)effect.duration.mValue / std::max(50 >> effect.amplifier, 1));
+            break;
+        }
+    }
+    return healed;
 }
 
 void drawIconBar(MinecraftUIRenderContext& ctx, mce::TexturePtr& iconTexture, mce::TexturePtr& halfIconTexture, float val, glm::tvec2<float> pos, BarAlign align, float alpha = 255.f, mce::Color flushColor = mce::Color::WHITE) {
@@ -96,12 +103,11 @@ void afterRenderUI(AfterRenderUIEvent& ev) {
     float saturation = attributes.getInstance(3).mCurrentValue;
     float exhaustion = attributes.getInstance(4).mCurrentValue;
     float health = attributes.getInstance(7).mCurrentValue;
-
     drawIconBar(renderContext, modTextures::saturationFull, modTextures::saturationHalf, saturation / 2, hudHungerPos, BarAlign::RIGHT);
     const Item* item = lp->playerInventory->getSelectedItem().getItem();
     if (item != nullptr && item->isFood()) {
         IFoodItemComponent* food = item->getFood();
-        if (food == nullptr) return;
+        FoodItemComponentLegacy* legacyFoodComponent = item->mFoodComponentLegacy.get();
         int nutrition = food->getNutrition();
         float predictedHunger = std::min(hunger + nutrition, 20.f);
         float predictedSaturation = std::min(saturation + food->getSaturationModifier() * nutrition * 2, predictedHunger);
@@ -124,7 +130,12 @@ void afterRenderUI(AfterRenderUIEvent& ev) {
             fadeanimation.alpha
         );
 
-        float healed = calculateRegeneratedHealth(predictedHunger, predictedSaturation, exhaustion);
+        float healed = calculateRegeneratedHealth(
+            predictedHunger,
+            predictedSaturation,
+            exhaustion,
+            legacyFoodComponent != nullptr ? legacyFoodComponent->mEffects : std::vector<FoodItemComponentLegacy::Effect>()
+        );
         if (healed > 0.f) {
             drawIconBar(
                 renderContext,
